@@ -5,6 +5,9 @@ return [
         'openai' => App\Services\Clients\OpenAIVideoClient::class,
         'veo' => App\Services\Clients\VeoAIVideoClient::class,
     ],
+    'chat_clients' => [
+        'openai' => App\Services\Clients\OpenAIChatClient::class,
+    ],
     'default_language' => 'en',
     'viral_topic_json_format' => [],
     'story_json_format' => [],
