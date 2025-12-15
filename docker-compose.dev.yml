@@ -1,0 +1,53 @@
+version: '3.3'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile.dev
+    container_name: video-creator
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - db
+
+  db:
+    image: postgres:14
+    container_name: video-creator-db
+    restart: always
+    environment:
+      POSTGRES_DB: video-creator
+      POSTGRES_USER: dexter
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  nginx:
+    image: nginx:latest
+    container_name: video-creator-nginx-server
+    ports:
+      - "8080:80"
+    volumes:
+      - ./src:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+
+  node:
+    image: node:18
+    container_name: video-creator-node
+    working_dir: /var/www/html/src
+    volumes:
+      - ./src:/var/www/html/src
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - "5173:5173"  # Vite HMR port
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - VITE_HOST=0.0.0.0
+      - VITE_PORT=5173
+
+volumes:
+  pgdata:
