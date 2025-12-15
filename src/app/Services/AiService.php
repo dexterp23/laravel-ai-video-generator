@@ -5,8 +5,6 @@ namespace App\Services;
 use App\Services\Clients\RetryingVideoClient;
 use App\Services\Clients\RetryingChatClient;
 use App\Services\Clients\OpenAIChatClient;
-use App\Services\Clients\OpenAIVideoClient;
-use App\Services\Clients\VeoAIVideoClient;
 use App\Services\Traits\VideoClientTrait;
 
 class AiService
@@ -15,16 +13,8 @@ class AiService
 
     public function video(string $type, array $data, string $client): mixed
     {
-        switch ($client) {
-            case self::VIDEO_CLIENT_OPENAI:
-                $videoClient = new OpenAIVideoClient();
-                break;
-            case self::VIDEO_CLIENT_VEO:
-                $videoClient = new VeoAIVideoClient();
-                break;
-        }
         $chatClient = new RetryingVideoClient(
-            $videoClient
+            app(AiServiceFactory::class)->makeVideo($client)
         );
         return $chatClient->run($type, $data);
     }
