@@ -4,8 +4,7 @@ A **Laravel 12** application for generating **AI-powered videos** based on a sim
 
 The workflow is as follows:
 
-1. The user submits a **theme**.
-2. The AI application generates a **viral video concept** for that theme and creates a **full text-based scenario**, including:
+1. The AI application generates a **viral video concept** based on theme and creates a **full text-based scenario**, including:
     - Video script and storyline
     - Scene breakdown
     - Suggested music and audio hooks
