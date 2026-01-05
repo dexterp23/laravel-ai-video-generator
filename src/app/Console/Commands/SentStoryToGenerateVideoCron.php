@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\SentStoryToGenerateVideoServiceInterface;
 use Illuminate\Console\Command;
 
 class SentStoryToGenerateVideoCron extends Command
@@ -20,14 +21,14 @@ class SentStoryToGenerateVideoCron extends Command
      */
     protected $description = 'Sent story to generate video';
 
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    protected SentStoryToGenerateVideoServiceInterface $sentStoryToGenerateVideoService;
+
+    public function __construct(
+        SentStoryToGenerateVideoServiceInterface $sentStoryToGenerateVideoService,
+    )
     {
         parent::__construct();
+        $this->sentStoryToGenerateVideoService = $sentStoryToGenerateVideoService;
     }
 
     /**
@@ -37,7 +38,7 @@ class SentStoryToGenerateVideoCron extends Command
      */
     public function handle()
     {
-        app('SentStoryToGenerateVideoService')->run();
+        $this->sentStoryToGenerateVideoService->run();
         return Command::SUCCESS;
     }
 }

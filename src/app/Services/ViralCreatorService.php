@@ -4,25 +4,31 @@ namespace App\Services;
 
 use App\Repositories\TopicsRepository;
 use App\Repositories\TopicsViralRepository;
+use App\Support\CronLockInterface;
 
-class ViralCreatorService
+class ViralCreatorService implements ViralCreatorServiceInterface
 {
     protected const PER_PAGE = 1;
     protected const CRON_LOCK_TABLE = 'topics';
     protected const PER_TOPIC = 1;
     protected TopicsRepository $topicsRepository;
     protected TopicsViralRepository $topicsViralRepository;
-    protected AiService $aiService;
+    protected AiServiceInterface $aiService;
     protected Logger $logger;
+    protected CronLockInterface $cronLock;
 
     public function __construct(
         TopicsRepository $topicsRepository,
         TopicsViralRepository $topicsViralRepository,
+        CronLockInterface $cronLock,
+        AiServiceInterface $aiService,
+        Logger $logger
     )
     {
         $this->topicsRepository = $topicsRepository;
         $this->topicsViralRepository = $topicsViralRepository;
-        $this->aiService = new AiService();
+        $this->cronLock = $cronLock;
+        $this->aiService = $aiService;
         $this->logger = new Logger();
     }
 
@@ -31,7 +37,7 @@ class ViralCreatorService
         try {
             $topics = $this->topicsRepository->getAllActiveForCron(self::PER_PAGE);
             if ($topics->isEmpty()) {
-                app('CronLock')->handleEmpty(self::CRON_LOCK_TABLE, $this->topicsRepository);
+                $this->cronLock->handleEmpty(self::CRON_LOCK_TABLE, $this->topicsRepository);
                 return;
             }
 

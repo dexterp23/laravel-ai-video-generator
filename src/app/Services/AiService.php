@@ -4,16 +4,22 @@ namespace App\Services;
 
 use App\Services\Clients\RetryingVideoClient;
 use App\Services\Clients\RetryingChatClient;
-use App\Services\Traits\VideoClientTrait;
 
-class AiService
+class AiService implements AiServiceInterface
 {
-    use VideoClientTrait;
+    protected AiServiceFactory $aiServiceFactory;
+
+    public function __construct(
+        AiServiceFactory $aiServiceFactory
+    )
+    {
+        $this->aiServiceFactory = $aiServiceFactory;
+    }
 
     public function video(string $type, array $data, string $client = 'openai'): mixed
     {
         $chatClient = new RetryingVideoClient(
-            app(AiServiceFactory::class)->makeVideo($client)
+            $this->aiServiceFactory->makeVideo($client)
         );
         return $chatClient->run($type, $data);
     }
@@ -21,7 +27,7 @@ class AiService
     public function chat(array $data, string $client = 'openai'): mixed
     {
         $chatClient = new RetryingChatClient(
-            app(AiServiceFactory::class)->makeChat($client)
+            $this->aiServiceFactory->makeChat($client)
         );
         return $chatClient->run($data);
     }

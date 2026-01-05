@@ -19,7 +19,7 @@ class TopicsStoryRepository
     {
         $query = $this->model::query();
         $query
-            ->where('video_status', '=', TopicsStory::VIDEO_STATUS_SENT_FOR_GENERATION)
+            ->where('video_status', '=', config("ai.video_status.sent_for_generation"))
             ->whereNotNull('video_id')
             ->when($limit, fn($q) => $q->limit($limit))
             ->orderBy('id', 'asc');
@@ -30,7 +30,7 @@ class TopicsStoryRepository
     {
         $query = $this->model::query();
         $query
-            ->where('video_status', '=', TopicsStory::VIDEO_STATUS_FOR_GENERATION)
+            ->where('video_status', '=', config("ai.video_status.for_generation"))
             ->when($limit, fn($q) => $q->limit($limit))
             ->orderBy('id', 'asc');
         return $query->get();

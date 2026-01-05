@@ -2,15 +2,18 @@
 
 namespace App\Providers;
 
-use App\Repositories\CronLockRepository;
-use App\Repositories\TopicsRepository;
-use App\Repositories\TopicsViralRepository;
-use App\Repositories\TopicsStoryRepository;
-use App\Services\ViralCreatorService;
-use App\Services\StoryCreatorService;
-use App\Services\SentStoryToGenerateVideoService;
+use App\Services\AiService;
+use App\Services\AiServiceInterface;
 use App\Services\GetGeneratedVideoService;
+use App\Services\GetGeneratedVideoServiceInterface;
+use App\Services\SentStoryToGenerateVideoService;
+use App\Services\SentStoryToGenerateVideoServiceInterface;
+use App\Services\StoryCreatorService;
+use App\Services\StoryCreatorServiceInterface;
+use App\Services\ViralCreatorService;
+use App\Services\ViralCreatorServiceInterface;
 use App\Support\CronLock;
+use App\Support\CronLockInterface;
 use App\Models\User;
 use App\Observers\UserObserver;
 use Illuminate\Support\ServiceProvider;
@@ -25,37 +28,30 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->bind('ViralCreatorService', function ($app) {
-            return new ViralCreatorService(
-                $app->make(TopicsRepository::class),
-                $app->make(TopicsViralRepository::class)
-            );
-        });
-
-        $this->app->bind('StoryCreatorService', function ($app) {
-            return new StoryCreatorService(
-                $app->make(TopicsViralRepository::class),
-                $app->make(TopicsStoryRepository::class)
-            );
-        });
-
-        $this->app->bind('SentStoryToGenerateVideoService', function ($app) {
-            return new SentStoryToGenerateVideoService(
-                $app->make(TopicsStoryRepository::class)
-            );
-        });
-
-        $this->app->bind('GetGeneratedVideoService', function ($app) {
-            return new GetGeneratedVideoService(
-                $app->make(TopicsStoryRepository::class)
-            );
-        });
-
-        $this->app->bind('CronLock', function ($app) {
-            return new CronLock(
-                $app->make(CronLockRepository::class)
-            );
-        });
+        $this->app->bind(
+            GetGeneratedVideoServiceInterface::class,
+            GetGeneratedVideoService::class
+        );
+        $this->app->bind(
+            SentStoryToGenerateVideoServiceInterface::class,
+            SentStoryToGenerateVideoService::class
+        );
+        $this->app->bind(
+            StoryCreatorServiceInterface::class,
+            StoryCreatorService::class
+        );
+        $this->app->bind(
+            ViralCreatorServiceInterface::class,
+            ViralCreatorService::class
+        );
+        $this->app->bind(
+            CronLockInterface::class,
+            CronLock::class
+        );
+        $this->app->bind(
+            AiServiceInterface::class,
+            AiService::class
+        );
     }
 
     /**

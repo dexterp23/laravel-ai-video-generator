@@ -2,28 +2,25 @@
 
 namespace App\Services;
 
-use App\Models\TopicsStory as TopicsStoryModel;
 use App\Repositories\TopicsStoryRepository;
-use App\Services\Traits\VideoClientTrait;
-use App\Services\Traits\VideoTypeTrait;
 use Illuminate\Support\Facades\Storage;
 
-class SentStoryToGenerateVideoService
+class SentStoryToGenerateVideoService implements SentStoryToGenerateVideoServiceInterface
 {
-    use VideoTypeTrait, VideoClientTrait;
-
     protected const PER_PAGE = 1;
     protected TopicsStoryRepository $topicsStoryRepository;
     protected Logger $logger;
-    protected AiService $aiService;
+    protected AiServiceInterface $aiService;
 
     public function __construct(
-        TopicsStoryRepository $topicsStoryRepository
+        TopicsStoryRepository $topicsStoryRepository,
+        AiServiceInterface $aiService,
+        Logger $logger
     )
     {
         $this->topicsStoryRepository = $topicsStoryRepository;
         $this->logger = new Logger();
-        $this->aiService = new AiService();
+        $this->aiService = $aiService;
     }
 
     public function run(): void
@@ -43,14 +40,14 @@ class SentStoryToGenerateVideoService
         $primtData = $story->script;
         $primtData['description'] = $story->description;
         $data = createOpenAiVideoPrompt($primtData);
-        $video = $this->aiService->video(self::VIDEO_GENERATE, $data, self::VIDEO_CLIENT_OPENAI);
+        $video = $this->aiService->video(config("ai.video_action_type.generate"), $data, config("ai.video_clients.openai"));
         if (empty($video['id'])) {
             throw new \Exception("No Video ID: $story->id");
         }
         $this->topicsStoryRepository->update($story->id, [
             'video_id' => $video['id'],
-            'video_ai_client' => self::VIDEO_CLIENT_OPENAI,
-            'video_status' => TopicsStoryModel::VIDEO_STATUS_SENT_FOR_GENERATION
+            'video_ai_client' => config("ai.video_clients.openai"),
+            'video_status' => config("ai.video_status.sent_for_generation")
         ]);
     }
 }

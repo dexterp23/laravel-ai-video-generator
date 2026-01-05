@@ -2,29 +2,34 @@
 
 namespace App\Services;
 
-use App\Models\TopicsStory as TopicsStoryModel;
 use App\Repositories\TopicsViralRepository;
 use App\Repositories\TopicsStoryRepository;
+use App\Support\CronLockInterface;
 
-class StoryCreatorService
+class StoryCreatorService implements StoryCreatorServiceInterface
 {
     protected const PER_PAGE = 1;
     protected const TOTAL_VIDEO_CREATION = 1;
     protected const CRON_LOCK_TABLE = 'topics_viral';
     protected TopicsViralRepository $topicsViralRepository;
     protected TopicsStoryRepository $topicsStoryRepository;
-    protected AiService $aiService;
+    protected AiServiceInterface $aiService;
     protected Logger $logger;
+    protected CronLockInterface $cronLock;
 
     public function __construct(
         TopicsViralRepository $topicsViralRepository,
-        TopicsStoryRepository $topicsStoryRepository
+        TopicsStoryRepository $topicsStoryRepository,
+        CronLockInterface $cronLock,
+        AiServiceInterface $aiService,
+        Logger $logger
     )
     {
         $this->topicsViralRepository = $topicsViralRepository;
         $this->topicsStoryRepository = $topicsStoryRepository;
-        $this->aiService = new AiService();
-        $this->logger = new Logger();
+        $this->cronLock = $cronLock;
+        $this->aiService = $aiService;
+        $this->logger = $logger;
     }
 
     public function run(): void
@@ -32,7 +37,7 @@ class StoryCreatorService
         try {
             $virals = $this->topicsViralRepository->getAllActiveForCron(self::PER_PAGE);
             if ($virals->isEmpty()) {
-                app('CronLock')->handleEmpty(self::CRON_LOCK_TABLE, $this->topicsViralRepository);
+                $this->cronLock->handleEmpty(self::CRON_LOCK_TABLE, $this->topicsViralRepository);
                 return;
             }
 
@@ -71,8 +76,8 @@ class StoryCreatorService
             $array[] = $data['videoScripts'];
         }
 
-        $storyVideoStatus = TopicsStoryModel::VIDEO_STATUS_NO_GENERATION;
-        if ($viral->topic->create_video == true) $storyVideoStatus = TopicsStoryModel::VIDEO_STATUS_FOR_GENERATION;
+        $storyVideoStatus = config("ai.video_status.no_generation");
+        if ($viral->topic->create_video == true) $storyVideoStatus = config("ai.video_status.for_generation");
 
         foreach ($array as $value) {
             $value['viral_id'] = $viral->id;

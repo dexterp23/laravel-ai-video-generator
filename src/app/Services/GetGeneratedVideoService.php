@@ -4,27 +4,25 @@ namespace App\Services;
 
 use App\Models\TopicsStory as TopicsStoryModel;
 use App\Repositories\TopicsStoryRepository;
-use App\Services\Traits\VideoClientTrait;
-use App\Services\Traits\VideoTypeTrait;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Storage;
 
-class GetGeneratedVideoService
+class GetGeneratedVideoService implements GetGeneratedVideoServiceInterface
 {
-    use VideoTypeTrait, VideoClientTrait;
-
     protected const PER_PAGE = 1;
     protected TopicsStoryRepository $topicsStoryRepository;
     protected Logger $logger;
-    protected AiService $aiService;
+    protected AiServiceInterface $aiService;
 
     public function __construct(
-        TopicsStoryRepository $topicsStoryRepository
+        TopicsStoryRepository $topicsStoryRepository,
+        AiServiceInterface $aiService,
+        Logger $logger
     )
     {
         $this->topicsStoryRepository = $topicsStoryRepository;
         $this->logger = new Logger();
-        $this->aiService = new AiService();
+        $this->aiService = $aiService;
     }
 
     public function run(): void
@@ -44,16 +42,16 @@ class GetGeneratedVideoService
         $data = [
             'video_id' => $story->video_id
         ];
-        $video = $this->aiService->video(self::VIDEO_RETREIVE, $data, $story->video_ai_client);
+        $video = $this->aiService->video(config("ai.video_action_type.retrieve"), $data, $story->video_ai_client);
         if ($video['status'] == 'completed') {
             $this->downloadVideo($data, $story);
-            $this->topicsStoryRepository->update($story->id, ['video_status' => TopicsStoryModel::VIDEO_STATUS_GENERATED]);
+            $this->topicsStoryRepository->update($story->id, ['video_status' => config("ai.video_status.generated")]);
         }
     }
 
     protected function downloadVideo(array $data, TopicsStoryModel $story): void
     {
-        $video = $this->aiService->video(self::VIDEO_DOWNLOAD, $data, $story->video_ai_client);
+        $video = $this->aiService->video(config("ai.video_action_type.download"), $data, $story->video_ai_client);
         $filename = $data['video_id'] . ".mp4";
         Storage::disk('local')->put("videos/$filename", $video);
     }

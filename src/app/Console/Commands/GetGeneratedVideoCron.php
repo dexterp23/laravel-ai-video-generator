@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\GetGeneratedVideoServiceInterface;
 use Illuminate\Console\Command;
 
 class GetGeneratedVideoCron extends Command
@@ -20,14 +21,14 @@ class GetGeneratedVideoCron extends Command
      */
     protected $description = 'Get generated video from ai client';
 
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    protected GetGeneratedVideoServiceInterface $getGeneratedVideoService;
+
+    public function __construct(
+        GetGeneratedVideoServiceInterface $getGeneratedVideoService,
+    )
     {
         parent::__construct();
+        $this->getGeneratedVideoService = $getGeneratedVideoService;
     }
 
     /**
@@ -37,7 +38,7 @@ class GetGeneratedVideoCron extends Command
      */
     public function handle()
     {
-        app('GetGeneratedVideoService')->run();
+        $this->getGeneratedVideoService->run();
         return Command::SUCCESS;
     }
 }

@@ -2,13 +2,10 @@
 
 namespace App\Services\Clients;
 
-use App\Services\Traits\VideoTypeTrait;
 use GuzzleHttp\Client;
 
 class VeoAIVideoClient implements AIVideoClientInterface
 {
-    use VideoTypeTrait;
-
     protected Client $client;
     protected string $model;
 

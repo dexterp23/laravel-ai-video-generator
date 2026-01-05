@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\ViralCreatorServiceInterface;
 use Illuminate\Console\Command;
 
 class GetViralsCron extends Command
@@ -20,14 +21,14 @@ class GetViralsCron extends Command
      */
     protected $description = 'Get virals from topic';
 
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    protected ViralCreatorServiceInterface $viralCreatorService;
+
+    public function __construct(
+        ViralCreatorServiceInterface $viralCreatorService,
+    )
     {
         parent::__construct();
+        $this->viralCreatorService = $viralCreatorService;
     }
 
     /**
@@ -37,7 +38,7 @@ class GetViralsCron extends Command
      */
     public function handle()
     {
-        app('ViralCreatorService')->run();
+        $this->viralCreatorService->run();
         return Command::SUCCESS;
     }
 }

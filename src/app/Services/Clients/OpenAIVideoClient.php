@@ -2,13 +2,10 @@
 
 namespace App\Services\Clients;
 
-use App\Services\Traits\VideoTypeTrait;
 use GuzzleHttp\Client;
 
 class OpenAIVideoClient implements AIVideoClientInterface
 {
-    use VideoTypeTrait;
-
     protected const OPENAI_URI = 'https://api.openai.com/v1/';
     protected Client $client;
     protected string $model;
@@ -28,13 +25,13 @@ class OpenAIVideoClient implements AIVideoClientInterface
     public function video(string $type, array $data): mixed
     {
         switch ($type) {
-            case self::VIDEO_GENERATE:
+            case config("ai.video_action_type.generate"):
                 return $this->generate($data);
                 break;
-            case self::VIDEO_RETREIVE:
+            case config("ai.video_action_type.retrieve"):
                 return $this->retrieve($data);
                 break;
-            case self::VIDEO_DOWNLOAD:
+            case config("ai.video_action_type.download"):
                 return $this->download($data);
                 break;
         }

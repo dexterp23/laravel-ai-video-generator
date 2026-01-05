@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\StoryCreatorServiceInterface;
 use Illuminate\Console\Command;
 
 class GetStoriesCron extends Command
@@ -20,14 +21,14 @@ class GetStoriesCron extends Command
      */
     protected $description = 'Get stories from viral';
 
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    protected StoryCreatorServiceInterface $storyCreatorService;
+
+    public function __construct(
+        StoryCreatorServiceInterface $storyCreatorService,
+    )
     {
         parent::__construct();
+        $this->storyCreatorService = $storyCreatorService;
     }
 
     /**
@@ -37,7 +38,7 @@ class GetStoriesCron extends Command
      */
     public function handle()
     {
-        app('StoryCreatorService')->run();
+        $this->storyCreatorService->run();
         return Command::SUCCESS;
     }
 }
